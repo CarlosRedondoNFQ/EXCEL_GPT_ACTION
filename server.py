@@ -30,7 +30,8 @@ def download_file():
     filepath = PATH
     if not os.path.exists(filepath):
         return jsonify({"error": "File not found"}), 404
-    return send_file(filepath, as_attachment=True)
+    # return send_file(filepath, as_attachment=True)
+    return send_file(filepath)
 
 
 if __name__ == '__main__':
