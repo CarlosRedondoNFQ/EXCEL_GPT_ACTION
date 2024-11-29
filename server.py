@@ -1,16 +1,9 @@
 from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
-import pandas as pd
 import os
 
 app = Flask(__name__)
-# CORS(app)
-
-# UPLOAD_FOLDER = 'uploads'
-# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 PATH = "./Excel_Contratos.xlsx"
-
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -19,22 +12,20 @@ def upload_file():
     file = request.files['file']
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
-    # filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(PATH)
-    return jsonify({"message": "File uploaded successfully", "filepath": PATH})
-
+    try:
+        file.save(PATH)
+        return jsonify({"message": "File uploaded successfully", "filepath": PATH})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/download/excel', methods=['GET'])
 def download_file():
-    # filepath = os.path.join(UPLOAD_FOLDER, filename)
-    filepath = PATH
-    if not os.path.exists(filepath):
+    if not os.path.exists(PATH):
         return jsonify({"error": "File not found"}), 404
-    # return send_file(filepath, as_attachment=True)
-    return send_file(filepath)
-
+    try:
+        return send_file(PATH, as_attachment=True)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-
