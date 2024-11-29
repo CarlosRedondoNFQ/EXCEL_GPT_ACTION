@@ -1,0 +1,7 @@
+gunicorn
+Werkzeug==2.2.2
+Flask
+openai
+flask-cors
+pandas
+openpyxl
