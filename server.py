@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, send_file
 import os
+import uuid
+import datetime
 
 app = Flask(__name__)
 
@@ -18,14 +20,41 @@ def upload_file():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# @app.route('/download/excel', methods=['GET'])
+# def download_file():
+#     if not os.path.exists(PATH):
+#         return jsonify({"error": "File not found"}), 404
+#     try:
+#         return send_file(PATH, as_attachment=True)
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+
 @app.route('/download/excel', methods=['GET'])
 def download_file():
     if not os.path.exists(PATH):
         return jsonify({"error": "File not found"}), 404
+
+    # Generate OpenAI-compatible file response metadata
+    file_metadata = {
+        "id": str(uuid.uuid4()),  # Unique identifier
+        "object": "file",
+        "bytes": os.path.getsize(PATH),
+        "created_at": int(datetime.datetime.utcnow().timestamp()),
+        "filename": os.path.basename(PATH),
+        "purpose": "fine-tune"  # Adjust as needed (e.g., "answers", "fine-tune")
+    }
+
     try:
-        return send_file(PATH, as_attachment=True)
+        # Include the file metadata in the response headers
+        response = send_file(PATH, as_attachment=True)
+        response.headers['Content-Type'] = 'application/json'
+        response.headers['X-OpenAI-File-Metadata'] = jsonify(file_metadata).get_data(as_text=True)
+        return response
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
