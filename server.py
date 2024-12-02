@@ -1,6 +1,7 @@
 from flask import Flask, send_file, jsonify, request
 from flask_cors import CORS
 import os
+import logging
 
 import base64
 
@@ -8,6 +9,15 @@ app = Flask(__name__)
 CORS(app)
 
 CSV_FILE_PATH = 'excel_contratos.csv'
+
+# Setup logging
+logging.basicConfig(level=logging.DEBUG)
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logging.error("Unhandled Exception", exc_info=e)
+    return {"error": str(e)}, 500
 
 
 @app.route('/download/excel', methods=['GET'])
@@ -30,6 +40,10 @@ def descargar_datos():
 
 @app.route('/upload/excel', methods=['POST'])
 def subir_archivo():
+    print("Request Content-Type:", request.content_type)
+    print("Request files:", request.files)
+    print("Request form:", request.form)
+
     try:
         if 'file' not in request.files:
             return jsonify({'error': 'No se encontró el archivo en la solicitud'}), 400
