@@ -1,60 +1,32 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, send_file, jsonify, make_response
+from flask_cors import CORS
 import os
-import uuid
-import datetime
 
 app = Flask(__name__)
+CORS(app)  # Permite solicitudes CORS desde cualquier origen
 
-PATH = "./excel_contratos.csv"
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    try:
-        file.save(PATH)
-        return jsonify({"message": "File uploaded successfully", "filepath": PATH})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# @app.route('/download/excel', methods=['GET'])
-# def download_file():
-#     if not os.path.exists(PATH):
-#         return jsonify({"error": "File not found"}), 404
-#     try:
-#         return send_file(PATH, as_attachment=True)
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
+# Ruta al archivo CSV que deseas servir
+CSV_FILE_PATH = 'excel_contratos.csv'
 
 
 @app.route('/download/excel', methods=['GET'])
-def download_file():
-    if not os.path.exists(PATH):
-        return jsonify({"error": "File not found"}), 404
-
-    # Generate OpenAI-compatible file response metadata
-    file_metadata = {
-        "id": str(uuid.uuid4()),  # Unique identifier
-        "object": "file",
-        "bytes": os.path.getsize(PATH),
-        "created_at": int(datetime.datetime.utcnow().timestamp()),
-        "filename": os.path.basename(PATH),
-        "purpose": "fine-tune"  # Adjust as needed (e.g., "answers", "fine-tune")
-    }
-
+def descargar_datos():
     try:
-        # Include the file metadata in the response headers
-        response = send_file(PATH, as_attachment=True)
-        response.headers['Content-Type'] = 'application/json'
-        response.headers['X-OpenAI-File-Metadata'] = jsonify(file_metadata).get_data(as_text=True)
-        return response
+        # Verifica si el archivo existe
+        if not os.path.exists(CSV_FILE_PATH):
+            return jsonify({'error': 'Archivo no encontrado'}), 404
+        
+        # Envía el archivo CSV como respuesta
+        return send_file(
+            CSV_FILE_PATH,
+            mimetype='text/csv',
+            as_attachment=True,
+            attachment_filename='excel_contratos.csv'
+        )
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    # Ejecuta la aplicación en el puerto 5000
+    app.run(host='0.0.0.0', port=5000, debug=True)
