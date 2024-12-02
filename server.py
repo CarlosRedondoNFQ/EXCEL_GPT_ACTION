@@ -1,4 +1,4 @@
-from flask import Flask, send_file, jsonify, make_response
+from flask import Flask, send_file, jsonify, request
 from flask_cors import CORS
 import os
 
@@ -27,6 +27,25 @@ def descargar_datos():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/upload/excel', methods=['POST'])
+def subir_archivo():
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No se encontró el archivo en la solicitud'}), 400
+        
+        file = request.files['file']
+        
+        if file.filename == '':
+            return jsonify({'error': 'Nombre de archivo no válido'}), 400
+        
+        file.save(CSV_FILE_PATH)
+        
+        return jsonify({'mensaje': 'Archivo subido exitosamente', 'nombre_archivo': file.filename}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     # Ejecuta la aplicación en el puerto 5000
     app.run(host='0.0.0.0', port=5000)
+
