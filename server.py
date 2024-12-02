@@ -45,19 +45,32 @@ def subir_archivo():
     print("Request form:", request.form)
 
     try:
-        if 'file' not in request.files:
-            return jsonify({'error': 'No se encontró el archivo en la solicitud'}), 400
+        if request.content_type != 'text/csv':
+            return jsonify({'error': 'El tipo de contenido debe ser text/csv'}), 400
+
+        with open(CSV_FILE_PATH, 'wb') as f:
+            f.write(request.data)
         
-        file = request.files['file']
-        
-        if file.filename == '':
-            return jsonify({'error': 'Nombre de archivo no válido'}), 400
-        
-        file.save(CSV_FILE_PATH)
-        
-        return jsonify({'mensaje': 'Archivo subido exitosamente', 'nombre_archivo': file.filename}), 200
+        return jsonify({'mensaje': 'Archivo subido exitosamente'}), 200
+    
     except Exception as e:
+        logging.error("Error al subir archivo como CSV", exc_info=e)
         return jsonify({'error': str(e)}), 500
+
+    # try:
+    #     if 'file' not in request.files:
+    #         return jsonify({'error': 'No se encontró el archivo en la solicitud'}), 400
+        
+    #     file = request.files['file']
+        
+    #     if file.filename == '':
+    #         return jsonify({'error': 'Nombre de archivo no válido'}), 400
+        
+    #     file.save(CSV_FILE_PATH)
+        
+    #     return jsonify({'mensaje': 'Archivo subido exitosamente', 'nombre_archivo': file.filename}), 200
+    # except Exception as e:
+    #     return jsonify({'error': str(e)}), 500
 
 
 
