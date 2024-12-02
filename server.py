@@ -21,7 +21,7 @@ def descargar_datos():
             CSV_FILE_PATH,
             mimetype='text/csv',
             as_attachment=True,
-            attachment_filename='excel_contratos.csv'
+            download_name='excel_contratos.csv'
         )
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -29,4 +29,4 @@ def descargar_datos():
 
 if __name__ == '__main__':
     # Ejecuta la aplicación en el puerto 5000
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
