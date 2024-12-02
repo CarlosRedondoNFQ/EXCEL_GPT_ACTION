@@ -38,68 +38,32 @@ def descargar_datos():
         return jsonify({'error': str(e)}), 500
 
 
+
 @app.route('/upload/excel', methods=['POST'])
-def subir_archivo():
+def subir_archivo_como_texto():
     print("Request Content-Type:", request.content_type)
     print("Request files:", request.files)
     print("Request form:", request.form)
 
     try:
-        if request.content_type != 'text/csv':
-            return jsonify({'error': 'El tipo de contenido debe ser text/csv'}), 400
+        if request.content_type != 'application/json':
+            return jsonify({'error': 'El tipo de contenido debe ser application/json'}), 400
 
-        with open(CSV_FILE_PATH, 'wb') as f:
-            f.write(request.data)
-        
-        return jsonify({'mensaje': 'Archivo subido exitosamente'}), 200
-    
+        # Leer el contenido JSON
+        data = request.get_json()
+        if 'file_name' not in data or 'file_content' not in data:
+            return jsonify({'error': 'JSON inválido. Se requieren los campos file_name y file_content'}), 400
+
+        file_name = data['file_name']
+        file_content = data['file_content']
+
+        # Guardar el contenido del archivo como CSV
+        with open(CSV_FILE_PATH, 'w', encoding='utf-8') as f:
+            f.write(file_content)
+
+        return jsonify({'mensaje': 'Archivo subido exitosamente', 'nombre_archivo': file_name}), 200
     except Exception as e:
-        logging.error("Error al subir archivo como CSV", exc_info=e)
         return jsonify({'error': str(e)}), 500
-
-    # try:
-    #     if 'file' not in request.files:
-    #         return jsonify({'error': 'No se encontró el archivo en la solicitud'}), 400
-        
-    #     file = request.files['file']
-        
-    #     if file.filename == '':
-    #         return jsonify({'error': 'Nombre de archivo no válido'}), 400
-        
-    #     file.save(CSV_FILE_PATH)
-        
-    #     return jsonify({'mensaje': 'Archivo subido exitosamente', 'nombre_archivo': file.filename}), 200
-    # except Exception as e:
-    #     return jsonify({'error': str(e)}), 500
-
-
-
-
-# @app.route('/upload/excel', methods=['POST'])
-# def subir_archivo():
-#     try:
-#         data = request.get_json()
-#         if not data or 'file_name' not in data or 'file_data' not in data:
-#             return jsonify({'error': 'Solicitud inválida, se requieren los campos file_name y file_data'}), 400
-
-#         file_name = data['file_name']
-#         file_data = data['file_data']
-
-#         # Decodificar el contenido del archivo
-#         file_bytes = base64.b64decode(file_data)
-
-#         # Sanitizar el nombre del archivo para evitar problemas de seguridad
-#         file_name = os.path.basename(file_name)
-
-#         # Guardar el archivo en el directorio de uploads
-#         file_path = CSV_FILE_PATH
-#         with open(file_path, 'wb') as f:
-#             f.write(file_bytes)
-
-#         return jsonify({'mensaje': 'Archivo subido exitosamente', 'nombre_archivo': file_name}), 200
-#     except Exception as e:
-#         return jsonify({'error': str(e)}), 500
-
 
 
 if __name__ == '__main__':
