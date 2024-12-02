@@ -5,7 +5,7 @@ import datetime
 
 app = Flask(__name__)
 
-PATH = "./Excel_Contratos.xlsx"
+PATH = "./excel_contratos.csv"
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
